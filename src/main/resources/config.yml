@@ -1,0 +1,38 @@
+menu:
+  slot: 27
+  title: "游戏结束, 请选择"
+  air: [12, 14]
+  fill:
+    item: 160
+    data: 15
+    name: '&f'
+  close:
+    slot: [8]
+    item: 160
+    data: 14
+    name: '&c&l关闭'
+  view:
+    slot: [10]
+    item: 381
+    data: 0
+    name: '继续旁观'
+  again:
+    slot: [13]
+    item: 342
+    data: 0
+    name: '再来一局'
+  hub:
+    slot: [16]
+    item: 341
+    data: 0
+    name: '离开游戏'
+
+inventory:
+  again:
+    item: 342
+    data: 0
+    name: '再来一局'
+
+waitSecond: 3000
+againServer: bw44
+hubServer: bwlobby

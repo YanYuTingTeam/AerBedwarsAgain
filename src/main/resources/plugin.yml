@@ -1,0 +1,9 @@
+name: AerBedwarsAgain
+version: 1.0.0
+main: com.aermini.bwagain.AerBedwarsAgain
+author: AerMini
+depend: [BedwarsRel]
+
+permissions:
+  aerbedwarsagain.admin:
+    default: op
