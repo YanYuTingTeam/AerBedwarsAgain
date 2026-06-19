@@ -41,6 +41,7 @@ public class BedwarsListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerRespawn(PlayerRespawnEvent event) {
         Player player = event.getPlayer();
+        if (BedwarsRel.getInstance() == null || BedwarsRel.getInstance().getGameManager() == null) return;
         Game game = BedwarsRel.getInstance().getGameManager().getGameOfPlayer(player);
         if (game == null) return;
         if (game.getState() != GameState.RUNNING) return;
@@ -56,9 +57,13 @@ public class BedwarsListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onGameEnd(BedwarsGameOverEvent event) {
         Game game = event.getGame();
+        if (game == null) return;
         long delayTicks = getDelayTicks();
 
-        for (Player player : game.getPlayers()) {
+        Collection<Player> players = game.getPlayers();
+        if (players == null) return;
+
+        for (Player player : players) {
             if (player == null || !player.isOnline()) continue;
             if (game.isSpectator(player)) continue;
 
@@ -80,13 +85,14 @@ public class BedwarsListener implements Listener {
             return;
         }
 
-        if (event.getInventory() == null || event.getInventory().getTitle() == null) {
+        Inventory topInv = event.getView().getTopInventory();
+        if (topInv == null || topInv.getTitle() == null) {
             forceOpenPlayers.remove(playerId);
             return;
         }
         String menuTitle = ChatColor.translateAlternateColorCodes('&',
                 plugin.getConfig().getString("menu.title", "游戏结束, 请选择"));
-        if (!event.getInventory().getTitle().equals(menuTitle)) {
+        if (!topInv.getTitle().equals(menuTitle)) {
             forceOpenPlayers.remove(playerId);
             return;
         }
@@ -98,31 +104,31 @@ public class BedwarsListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onMenuClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player)) return;
-        if (event.getInventory() == null || event.getInventory().getTitle() == null) return;
-
+        Inventory topInv = event.getView().getTopInventory();
+        if (topInv == null || topInv.getTitle() == null) return;
         String menuTitle = ChatColor.translateAlternateColorCodes('&',
                 plugin.getConfig().getString("menu.title", "游戏结束, 请选择"));
-        if (!event.getInventory().getTitle().equals(menuTitle)) return;
+        if (!topInv.getTitle().equals(menuTitle)) return;
 
         event.setCancelled(true);
-        Player player = (Player) event.getWhoClicked();
-        menu.handleClick(player, event.getSlot());
+        menu.handleClick((Player) event.getWhoClicked(), event.getSlot());
     }
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onInventoryClickAgainItem(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player)) return;
         Player player = (Player) event.getWhoClicked();
-        if (event.getClickedInventory() == null ||
-                event.getClickedInventory().getType() != InventoryType.PLAYER) return;
+        if (event.getClickedInventory() == null || event.getClickedInventory().getType() != InventoryType.PLAYER)
+            return;
         if (event.getSlot() != 7) return;
         ItemStack clickedItem = event.getCurrentItem();
-        if (clickedItem == null || !clickedItem.hasItemMeta()) return;
+        if (clickedItem == null || clickedItem.getItemMeta() == null || clickedItem.getItemMeta().getDisplayName() == null)
+            return;
         if (!plugin.getConfig().contains("inventory.again")) return;
 
-        String expectedName = plugin.getConfig().getString("inventory.again.name", "再来一局");
-        String expectedNameTranslated = ChatColor.translateAlternateColorCodes('&', expectedName);
-        if (!clickedItem.getItemMeta().getDisplayName().equals(expectedNameTranslated)) return;
+        String expectedName = ChatColor.translateAlternateColorCodes('&',
+                plugin.getConfig().getString("inventory.again.name", "再来一局"));
+        if (!clickedItem.getItemMeta().getDisplayName().equals(expectedName)) return;
 
         event.setCancelled(true);
         String againServer = plugin.getConfig().getString("againServer", "bw44");

@@ -83,7 +83,7 @@ public class GameEndMenu {
         }
 
         int fillMaterialId = plugin.getConfig().getInt("menu.fill.item", 160);
-        int fillData = plugin.getConfig().getInt("menu.fill.data", 15);
+        int fillData = plugin.getConfig().getInt("menu.fill.data", 7);
         String fillName = plugin.getConfig().getString("menu.fill.name", "&f");
         List<String> fillLore = plugin.getConfig().getStringList("menu.fill.lore");
         this.fillItem = new MenuItem(-1, fillMaterialId, fillData, fillName, fillLore);
@@ -136,16 +136,28 @@ public class GameEndMenu {
         occupiedSlots.add(closeItem.slot);
         occupiedSlots.addAll(airSlots);
 
-        inventory.setItem(viewItem.slot, viewItem.toItemStack());
-        inventory.setItem(againItem.slot, againItem.toItemStack());
-        inventory.setItem(hubItem.slot, hubItem.toItemStack());
-        inventory.setItem(closeItem.slot, closeItem.toItemStack());
+        int adjLow = againItem.slot - 1;
+        int adjHigh = againItem.slot + 1;
+        if (adjLow >= 0 && adjLow < size) occupiedSlots.add(adjLow);
+        if (adjHigh >= 0 && adjHigh < size) occupiedSlots.add(adjHigh);
 
-        for (int i = 0; i < size; i++) {
-            if (!occupiedSlots.contains(i)) inventory.setItem(i, fillItem.toItemStack());
+        setItemIfPresent(inventory, viewItem.slot, viewItem.toItemStack());
+        setItemIfPresent(inventory, againItem.slot, againItem.toItemStack());
+        setItemIfPresent(inventory, hubItem.slot, hubItem.toItemStack());
+        setItemIfPresent(inventory, closeItem.slot, closeItem.toItemStack());
+
+        ItemStack fill = fillItem.toItemStack();
+        if (fill != null) {
+            for (int i = 0; i < size; i++) {
+                if (!occupiedSlots.contains(i)) inventory.setItem(i, fill);
+            }
         }
 
         return inventory;
+    }
+
+    private void setItemIfPresent(Inventory inventory, int slot, ItemStack item) {
+        if (item != null && slot >= 0 && slot < size) inventory.setItem(slot, item);
     }
 
     public boolean handleClick(Player player, int slot) {
